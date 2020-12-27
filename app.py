@@ -644,6 +644,21 @@ def starArticles(current_user):
         db.session.commit()
         return jsonify(message="Starred Article")
 
+@app.route('/api/removeStar/<article_id>',methods=['DELETE'])
+@token_required
+def removeStar(current_user,article_id):
+    user={}
+    user['public_id']=current_user.public_id
+    removeStars=Starred.query.filter_by(user_id=user['public_id'],article_id=article_id).first()
+
+    if removeStars:
+        db.session.delete(removeStars)
+        db.session.commit()
+        return jsonify(message="Star removed")
+    else:
+        return jsonify(mesage="Article not found")
+    
+
 @app.route('/api/getArticles',methods=['GET'])
 @token_required
 def getArticles(current_user):
