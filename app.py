@@ -600,6 +600,25 @@ def transcations (current_user, portfolio_id):
     values=[allData,UserTrans]
     return jsonify(message=values)
 
+@app.route('/api/makeArticle', methods=['POST'])
+@token_required
+def makeArticle(current_user):
+    if not current_user.admin:
+        return jsonify(message="You do not have credentials to create an article")
+    else:
+        articles=request.form
+        newArticle=Articles(
+                article_id=str(uuid.uuid4()),
+                author=articles['author'],
+                title=articles['title'],
+                subtitle=articles['subtitle'],
+                content=articles['subtitle'],
+                date=datetime.datetime.now()
+        )
+        db.session.add(newArticle)
+        db.session.commit()
+        return jsonify(message='Data Added'),201
+
 
 @app.route('/api/logout')
 def logout_page():
