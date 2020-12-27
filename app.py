@@ -658,6 +658,34 @@ def removeStar(current_user,article_id):
     else:
         return jsonify(mesage="Article not found")
     
+@app.route('/api/starArticles',methods=['GET'])
+@token_required
+def viewStar(current_user):
+    user={}
+    user['public_id']=current_user.public_id
+    Stars=Starred.query.filter_by(user_id=user['public_id']).all()
+    out=[]
+    allArticles=[]
+    if Stars:
+        for star in Stars:
+            stars={}
+            stars['article_id']=star.article_id
+            out.append(stars)
+        for output in out:
+            starArticle=Articles.query.filter_by(article_id=output['article_id']).first()
+            article={}
+            article['title']=starArticle.title
+            allArticles.append(article)
+        values=[out,allArticles]
+        return jsonify(data=values)
+        
+    else:
+        return jsonify(message="No star articles")
+
+
+
+
+
 
 @app.route('/api/getArticles',methods=['GET'])
 @token_required
