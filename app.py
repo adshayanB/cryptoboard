@@ -50,7 +50,8 @@ def db_seed():
                              password=hashed_password,
                              confirmedEmail=True,
                              public_id=str(uuid.uuid4()),
-                             confirmedOn=None
+                             confirmedOn=None,
+                             admin=True
                              )
     db.session.add(testUser)
     db.session.commit()
@@ -65,6 +66,7 @@ class User(db.Model):
     email=Column(String(50), unique=True)
     password=Column(String(50))
     confirmedEmail=Column(Boolean)
+    admin=Column(Boolean)
     confirmedOn=Column(String())
 
 class Portfolio(db.Model):
@@ -90,6 +92,15 @@ class Transcation(db.Model):
     priceofCryptoATTrans=Column(Float)
     quantityTrans=Column(Float)
     TranscationValue=Column(Float)
+
+class Articles(db.Model):
+    id=Column(Integer,primary_key=True)
+    article_id=Column(String(50),unique=True)
+    author=Column(String(50))
+    title=Column(String())
+    subtitle=Column(String())
+    content=Column(String())
+    date=Column(String())
 
 
 def token_required(f):
@@ -156,7 +167,8 @@ def register():
                              email=data['email'],
                              password=hashed_password,
                              confirmedEmail=False,
-                             confirmedOn=None
+                             confirmedOn=None,
+                             admin=False
                              )
         email = data['email']
         from_email = Email("cryptoboard86@gmail.com")
