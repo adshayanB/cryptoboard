@@ -638,6 +638,22 @@ def getArticles(current_user):
 
     else:
         return jsonify(message="No articles at this time")
+@app.route('/api/getArticles/<article_id>')
+@token_required
+def getArticlebyId(current_user,article_id):
+    data=Articles.query.filter_by(user_id=user['public_id']).all()
+    if article:
+        articleData={}
+        articlesData['article_id']=data.article_id
+        articlesData['author']=data.author
+        articlesData['title']=data.title
+        articlesData['subtitle']=data.subtitle
+        articlesData['content']=data.content
+        articlesData['date']=data.date
+    
+        return jsonify(articleData=articlesData)
+    else:
+        return jsonify(message="Article not found")
 
 @app.route('/api/logout')
 def logout_page():
