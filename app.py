@@ -603,6 +603,7 @@ def transcations (current_user, portfolio_id):
 @app.route('/api/makeArticle', methods=['POST'])
 @token_required
 def makeArticle(current_user):
+   
     if not current_user.admin:
         return jsonify(message="You do not have credentials to create an article")
     else:
@@ -618,7 +619,25 @@ def makeArticle(current_user):
         db.session.add(newArticle)
         db.session.commit()
         return jsonify(message='Data Added'),201
+@app.route('/api/getArticles',methods=['POST'])
+@token_required
+def getArticles(current_user):
+    allArticles=Articles.query.all()
+    articles=[]
+    if allArticles:
+        for data in allArticles:
+            articlesData={}
+            articlesData['article_id']=data.article_id
+            articlesData['author']=data.author
+            articlesData['title']=data.title
+            articlesData['subtitle']=data.subtitle
+            articlesData['content']=data.content
+            articlesData['date']=data.date
+            articles.append(articlesData)
+        return jsonify(articlesData=articles)
 
+    else:
+        return jsonify(message="No articles at this time")
 
 @app.route('/api/logout')
 def logout_page():
