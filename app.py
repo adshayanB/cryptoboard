@@ -641,7 +641,7 @@ def getArticles(current_user):
 @app.route('/api/getArticles/<article_id>')
 @token_required
 def getArticlebyId(current_user,article_id):
-    data=Articles.query.filter_by(user_id=user['public_id']).all()
+    data=Articles.query.filter_by(article_id=article_id]).all()
     if article:
         articleData={}
         articlesData['article_id']=data.article_id
