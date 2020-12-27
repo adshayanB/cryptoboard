@@ -619,7 +619,7 @@ def makeArticle(current_user):
         db.session.add(newArticle)
         db.session.commit()
         return jsonify(message='Data Added'),201
-@app.route('/api/getArticles',methods=['POST'])
+@app.route('/api/getArticles',methods=['GET'])
 @token_required
 def getArticles(current_user):
     allArticles=Articles.query.all()
@@ -638,10 +638,11 @@ def getArticles(current_user):
 
     else:
         return jsonify(message="No articles at this time")
-@app.route('/api/getArticles/<article_id>')
+
+@app.route('/api/getArticles/<article_id>', methods =['GET'])
 @token_required
 def getArticlebyId(current_user,article_id):
-    data=Articles.query.filter_by(article_id=article_id]).all()
+    data=Articles.query.filter_by(article_id=article_id).all()
     if article:
         articleData={}
         articlesData['article_id']=data.article_id
@@ -654,6 +655,19 @@ def getArticlebyId(current_user,article_id):
         return jsonify(articleData=articlesData)
     else:
         return jsonify(message="Article not found")
+@app.route('/api/deleteArticles/<article_id>', methods=['DELETE'])
+@token_required
+def deleteArticle(current_user,article_id):
+    articleDel=Articles.query.filter_by(article_id=article_id).first()
+
+     
+    if articleDel:
+        db.session.delete(articleDel)
+        db.session.commit()
+        return jsonify(message='Article has been deleted')
+    else:
+        return jsonify(message='Article does not exist')
+
 
 @app.route('/api/logout')
 def logout_page():
