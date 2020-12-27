@@ -668,6 +668,22 @@ def deleteArticle(current_user,article_id):
     else:
         return jsonify(message='Article does not exist')
 
+@app.route('/api/editArticles/<article_id>', methods=['PUT'])
+@token_required
+def editArticle(current_user,article_id):
+    articleEdit=Articles.query.filter_by(article_id=article_id).first()
+    data=request.form
+    if articleEdit:
+        data.author=data['author']
+        data.title=data['title']
+        data.subtitle=data['subtitle']
+        ata.content=data['content']
+        data.date=datetime.datetime.now()
+        db.session.commit()
+        return jsonify(message='Article has been edited')
+    else:
+        return jsonify(message='Article does not exist')
+
 
 @app.route('/api/logout')
 def logout_page():
