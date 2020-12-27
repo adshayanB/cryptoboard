@@ -102,6 +102,11 @@ class Articles(db.Model):
     content=Column(String())
     date=Column(String())
 
+class Starred(db.Model):
+    id=Column(Integer,primary_key=True)
+    article_id=Column(String(50))
+    user_id=Column(String(50))
+
 
 def token_required(f):
     @wraps(f)
