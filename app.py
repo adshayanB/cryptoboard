@@ -624,6 +624,26 @@ def makeArticle(current_user):
         db.session.add(newArticle)
         db.session.commit()
         return jsonify(message='Data Added'),201
+@app.route('/api/starredArticles', methods=['POST'])
+@token_required
+def starArticles(current_user):
+    user={}
+    user['public_id']=current_user.public_id
+    articles=request.form
+
+    starredArticle=Starred.query.filter_by(user_id=user['public_id'],article_id=articles['article_id']).first()
+
+    if starredArticle:
+        return jsonify(message="User already starred")
+    else:
+        star=Starred(
+            user_id=user["public_id"],
+            article_id=articles["article_id"]
+        )
+        db.session.add(star)
+        db.session.commit()
+        return jsonify(message="Starred Article")
+
 @app.route('/api/getArticles',methods=['GET'])
 @token_required
 def getArticles(current_user):
