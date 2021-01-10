@@ -1,2 +1,2 @@
 # cryptoboard
-A full stack application that simulates the crypto market 
+A web application that helps manages a user's cryptocurrency portfolio
