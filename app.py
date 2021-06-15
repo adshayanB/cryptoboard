@@ -102,6 +102,11 @@ class Articles(db.Model):
     content=Column(String())
     date=Column(String())
 
+class Starred(db.Model):
+    id=Column(Integer,primary_key=True)
+    article_id=Column(String(50))
+    user_id=Column(String(50))
+
 
 def token_required(f):
     @wraps(f)
@@ -619,6 +624,69 @@ def makeArticle(current_user):
         db.session.add(newArticle)
         db.session.commit()
         return jsonify(message='Data Added'),201
+@app.route('/api/starredArticles/<article_id>', methods=['POST'])
+@token_required
+def starArticles(current_user,article_id):
+    user={}
+    user['public_id']=current_user.public_id
+    articles=request.form
+
+    starredArticle=Starred.query.filter_by(user_id=user['public_id'],article_id=article_id).first()
+
+    if starredArticle:
+        return jsonify(message="User already starred")
+    else:
+        star=Starred(
+            user_id=user["public_id"],
+            article_id=article_id
+        )
+        db.session.add(star)
+        db.session.commit()
+        return jsonify(message="Starred Article")
+
+@app.route('/api/removeStar/<article_id>',methods=['DELETE'])
+@token_required
+def removeStar(current_user,article_id):
+    user={}
+    user['public_id']=current_user.public_id
+    removeStars=Starred.query.filter_by(user_id=user['public_id'],article_id=article_id).first()
+
+    if removeStars:
+        db.session.delete(removeStars)
+        db.session.commit()
+        return jsonify(message="Star removed")
+    else:
+        return jsonify(mesage="Article not found")
+    
+@app.route('/api/starArticles',methods=['GET'])
+@token_required
+def viewStar(current_user):
+    user={}
+    user['public_id']=current_user.public_id
+    Stars=Starred.query.filter_by(user_id=user['public_id']).all()
+    out=[]
+    allArticles=[]
+    if Stars:
+        for star in Stars:
+            stars={}
+            stars['article_id']=star.article_id
+            out.append(stars)
+        for output in out:
+            starArticle=Articles.query.filter_by(article_id=output['article_id']).first()
+            article={}
+            article['title']=starArticle.title
+            allArticles.append(article)
+        values=[out,allArticles]
+        return jsonify(data=values)
+        
+    else:
+        return jsonify(message="No star articles")
+
+
+
+
+
+
 @app.route('/api/getArticles',methods=['GET'])
 @token_required
 def getArticles(current_user):
@@ -642,9 +710,9 @@ def getArticles(current_user):
 @app.route('/api/getArticles/<article_id>', methods =['GET'])
 @token_required
 def getArticlebyId(current_user,article_id):
-    data=Articles.query.filter_by(article_id=article_id).all()
-    if article:
-        articleData={}
+    data=Articles.query.filter_by(article_id=article_id).first()
+    if data:
+        articlesData={}
         articlesData['article_id']=data.article_id
         articlesData['author']=data.author
         articlesData['title']=data.title
@@ -677,7 +745,7 @@ def editArticle(current_user,article_id):
         data.author=data['author']
         data.title=data['title']
         data.subtitle=data['subtitle']
-        ata.content=data['content']
+        data.content=data['content']
         data.date=datetime.datetime.now()
         db.session.commit()
         return jsonify(message='Article has been edited')
@@ -685,11 +753,19 @@ def editArticle(current_user,article_id):
         return jsonify(message='Article does not exist')
 
 
+@app.route('/api/timeout')
+def timeout_page():
+    session.pop('token', None)
+    session.pop('firstName', None)
+    session.pop('userData', None)
+    return render_template('timeout-login.jinja2')
+
 @app.route('/api/logout')
 def logout_page():
     session.pop('token', None)
+    session.pop('firstName', None)
+    session.pop('userData', None)
     return render_template('signed-out.jinja2')
-
 
 @app.route('/api/register')
 def register_page():
@@ -700,14 +776,30 @@ def login_page():
     return render_template('login.jinja2')
 
 
-@app.route('/home/logged-in')
-def logged_in_landing_page():
-    return render_template('logged-in.jinja2')
+@app.route('/api/home')
+@token_required
+def logged_in_landing_page(current_user):
+    return render_template('logged-in-landing-page.jinja2', userdata=session['userData'])
+
+@app.route('/api/about')
+@token_required
+def logged_in_about_page(current_user):
+    print("hello")
+    return render_template('about-logged-in.jinja2', userdata=session['userData'])
+
+@app.route('/about')
+def about_page():
+    return render_template('about.jinja2')
 
 @app.route('/')
 def landing_page():
     return render_template('landing-page.jinja2')
 
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('404error.jinja2'), 404
 if __name__ == "__main__":
     app.debug = True
     app.run()
